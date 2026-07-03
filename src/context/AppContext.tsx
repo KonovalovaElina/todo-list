@@ -37,7 +37,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const registerUser = useCallback(async (data: RegisterData) => {
     const result = await mockRegister(data)
 
-    if (!result.success) {
+    if ('message' in result) {
       return { success: false, message: result.message }
     }
 
@@ -50,7 +50,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const loginUser = useCallback(async (name: string, password: string) => {
     const result = await mockLogin(name, password)
 
-    if (!result.success) {
+    if ('message' in result) {
       return { success: false, message: result.message }
     }
 
