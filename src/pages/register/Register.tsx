@@ -1,0 +1,102 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { Link } from 'react-router-dom'
+import Layout from '../../layout/Layout'
+import styles from '../../styles/AuthForm.module.css'
+import { emailValidation, nameValidation, passwordValidation } from '../../utils/authValidation'
+
+type RegisterFormData = {
+  name: string
+  email: string
+  password: string
+}
+
+export default function Register() {
+  const [isFormOpen, setIsFormOpen] = useState(true)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({ mode: 'onBlur' })
+
+  const onSubmit = (data: RegisterFormData) => {
+    console.log(data)
+    setIsFormOpen(false)
+  }
+
+  return (
+    <Layout>
+      <section className={styles.auth}>
+        <h1 className={styles.auth__title}>Регистрация</h1>
+        <p className={styles.auth__subtitle}>
+          Создайте аккаунт, чтобы начать управлять задачами
+        </p>
+
+        {isFormOpen ? (
+          <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+            <div className={styles.form__field}>
+              <label className={styles.form__label} htmlFor="name">
+                Имя
+              </label>
+              <input
+                id="name"
+                type="text"
+                className={`${styles.form__input} ${errors.name ? styles['form__input--error'] : ''}`}
+                placeholder="Введите имя"
+                {...register('name', nameValidation)}
+              />
+              {errors.name && (
+                <span className={styles.form__error}>{errors.name.message}</span>
+              )}
+            </div>
+
+            <div className={styles.form__field}>
+              <label className={styles.form__label} htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                className={`${styles.form__input} ${errors.email ? styles['form__input--error'] : ''}`}
+                placeholder="example@mail.com"
+                {...register('email', emailValidation)}
+              />
+              {errors.email && (
+                <span className={styles.form__error}>{errors.email.message}</span>
+              )}
+            </div>
+
+            <div className={styles.form__field}>
+              <label className={styles.form__label} htmlFor="password">
+                Пароль
+              </label>
+              <input
+                id="password"
+                type="password"
+                className={`${styles.form__input} ${errors.password ? styles['form__input--error'] : ''}`}
+                placeholder="Введите пароль"
+                {...register('password', passwordValidation)}
+              />
+              {errors.password && (
+                <span className={styles.form__error}>{errors.password.message}</span>
+              )}
+            </div>
+
+            <button type="submit" className={styles.form__submit}>
+              Зарегистрироваться
+            </button>
+          </form>
+        ) : (
+          <p className={styles.auth__success}>Регистрация прошла успешно!</p>
+        )}
+
+        <p className={styles.auth__footer}>
+          Уже есть аккаунт?{' '}
+          <Link to="/login" className={styles.auth__link}>
+            Войти
+          </Link>
+        </p>
+      </section>
+    </Layout>
+  )
+}

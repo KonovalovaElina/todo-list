@@ -1,4 +1,6 @@
 import { motion, type Variants } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import Slider from '../../components/slider/Slider'
 import Layout from '../../layout/Layout'
 import styles from './Home.module.css'
 
@@ -60,13 +62,23 @@ export default function Home() {
             animate="visible"
             variants={fadeUp}
           >
-            <motion.button
-              className={`${styles.btn} ${styles['btn--primary']}`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              Создать аккаунт бесплатно
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                to="/register"
+                className={`${styles.btn} ${styles['btn--primary']}`}
+              >
+                Создать аккаунт бесплатно
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            custom={3}
+            initial="hidden"
+            animate="visible"
+            variants={fadeUp}
+          >
+            <Slider />
           </motion.div>
         </section>
       </div>
