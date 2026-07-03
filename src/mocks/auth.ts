@@ -1,47 +1,76 @@
-export type AuthUser = {
-  email: string
-  password: string
-  name: string
-}
-
-export type LoginResult =
-  | { success: true; user: { email: string; name: string } }
-  | { success: false; message: string }
-
-const MOCK_USERS: AuthUser[] = [
-  {
-    email: 'user@mail.com',
-    password: 'Password1',
-    name: 'Тестовый пользователь',
-  },
-]
+import type { AuthResult, RegisterData, User } from '../types/app'
 
 const MOCK_DELAY_MS = 800
 
-export async function mockLogin(email: string, password: string): Promise<LoginResult> {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS))
+let mockUsers: User[] = [
+  {
+    id: '1',
+    name: 'Пользователь1',
+    email: 'user@mail.com',
+    password: 'Password1',
+  },
+]
 
-  const user = MOCK_USERS.find(
-    (item) => item.email.toLowerCase() === email.toLowerCase() && item.password === password,
+const delay = () => new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS))
+
+export async function mockRegister(data: RegisterData): Promise<AuthResult> {
+  await delay()
+
+  const emailExists = mockUsers.some(
+    (user) => user.email.toLowerCase() === data.email.toLowerCase(),
+  )
+
+  if (emailExists) {
+    return {
+      success: false,
+      message: 'Пользователь с таким email уже существует',
+    }
+  }
+
+  const newUser: User = {
+    id: String(Date.now()),
+    name: data.name,
+    email: data.email,
+    password: data.password,
+  }
+
+  mockUsers = [...mockUsers, newUser]
+
+  return {
+    success: true,
+    user: {
+      id: newUser.id,
+      name: newUser.name,
+      isAuthenticated: true,
+    },
+  }
+}
+
+export async function mockLogin(name: string, password: string): Promise<AuthResult> {
+  await delay()
+
+  const user = mockUsers.find(
+    (item) => item.name === name && item.password === password,
   )
 
   if (!user) {
     return {
       success: false,
-      message: 'Неверный email или пароль',
+      message: 'Неверное имя или пароль',
     }
   }
 
   return {
     success: true,
     user: {
-      email: user.email,
+      id: user.id,
       name: user.name,
+      isAuthenticated: true,
     },
   }
 }
 
 export const MOCK_CREDENTIALS_HINT = {
-  email: MOCK_USERS[0].email,
-  password: MOCK_USERS[0].password,
+  name: mockUsers[0].name,
+  password: mockUsers[0].password,
 }

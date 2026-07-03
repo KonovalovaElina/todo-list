@@ -1,22 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAppContext } from '../../context/AppContext'
 import Layout from '../../layout/Layout'
 import styles from './Tasks.module.css'
 
-type Task = {
-  id: number
-  text: string
-  done: boolean
-}
-
-const INITIAL_TASKS: Task[] = [
-  { id: 1, text: 'Посмотреть лекции', done: false },
-  { id: 2, text: 'Закончить ДЗ по React', done: false },
-  { id: 3, text: 'Зачет по TypeScript', done: true },
-]
-
 export default function Tasks() {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS)
+  const navigate = useNavigate()
+  const { user, tasks, isTasksLoading, setTasks } = useAppContext()
   const [newTaskText, setNewTaskText] = useState('')
+
+  useEffect(() => {
+    if (!user?.isAuthenticated) {
+      navigate('/login')
+    }
+  }, [user, navigate])
 
   const handleToggleDone = (id: number, checked: boolean) => {
     setTasks((prev) =>
@@ -37,6 +34,10 @@ export default function Tasks() {
       { id: Date.now(), text, done: false },
     ])
     setNewTaskText('')
+  }
+
+  if (!user?.isAuthenticated) {
+    return null
   }
 
   return (
@@ -63,31 +64,35 @@ export default function Tasks() {
           </button>
         </form>
 
-        <ul className={styles.tasks__list}>
-          {tasks.map((task) => (
-            <li key={task.id} className={styles.tasks__item}>
-              <input
-                type="checkbox"
-                className={styles.tasks__checkbox}
-                checked={task.done}
-                onChange={(event) => handleToggleDone(task.id, event.target.checked)}
-              />
-              <span
-                className={`${styles.tasks__text} ${task.done ? styles['tasks__text--done'] : ''}`}
-              >
-                {task.text}
-              </span>
-              <button
-                type="button"
-                className={styles.tasks__deleteBtn}
-                onClick={() => handleDelete(task.id)}
-                aria-label="Удалить задачу"
-              >
-                ✕
-              </button>
-            </li>
-          ))}
-        </ul>
+        {isTasksLoading ? (
+          <p className={styles.tasks__loading}>Загрузка задач...</p>
+        ) : (
+          <ul className={styles.tasks__list}>
+            {tasks.map((task) => (
+              <li key={task.id} className={styles.tasks__item}>
+                <input
+                  type="checkbox"
+                  className={styles.tasks__checkbox}
+                  checked={task.done}
+                  onChange={(event) => handleToggleDone(task.id, event.target.checked)}
+                />
+                <span
+                  className={`${styles.tasks__text} ${task.done ? styles['tasks__text--done'] : ''}`}
+                >
+                  {task.text}
+                </span>
+                <button
+                  type="button"
+                  className={styles.tasks__deleteBtn}
+                  onClick={() => handleDelete(task.id)}
+                  aria-label="Удалить задачу"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </Layout>
   )

@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAppContext } from '../../context/AppContext'
 import Layout from '../../layout/Layout'
-import { MOCK_CREDENTIALS_HINT, mockLogin } from '../../mocks/auth'
+import { MOCK_CREDENTIALS_HINT } from '../../mocks/auth'
 import styles from '../../styles/AuthForm.module.css'
-import { emailValidation, passwordValidation } from '../../utils/authValidation'
+import { nameValidation, passwordValidation } from '../../utils/authValidation'
 
 type LoginFormData = {
-  email: string
+  name: string
   password: string
 }
 
 export default function Login() {
   const navigate = useNavigate()
+  const { loginUser } = useAppContext()
   const [authError, setAuthError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const {
@@ -25,16 +27,16 @@ export default function Login() {
     setAuthError(null)
     setIsLoading(true)
 
-    const result = await mockLogin(data.email, data.password)
+    const result = await loginUser(data.name, data.password)
 
     setIsLoading(false)
 
-    if ('message' in result) {
-      setAuthError(result.message)
+    if (!result.success) {
+      setAuthError(result.message ?? 'Ошибка авторизации')
       return
     }
 
-    navigate('/tasks', { state: { user: result.user } })
+    navigate('/tasks')
   }
 
   return (
@@ -45,23 +47,23 @@ export default function Login() {
           Войдите в аккаунт, чтобы продолжить работу с задачами
         </p>
         <p className={styles.auth__hint}>
-          Для успешного входа: {MOCK_CREDENTIALS_HINT.email} / {MOCK_CREDENTIALS_HINT.password}
+          Для успешного входа: {MOCK_CREDENTIALS_HINT.name} / {MOCK_CREDENTIALS_HINT.password}
         </p>
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className={styles.form__field}>
-            <label className={styles.form__label} htmlFor="email">
-              Email
+            <label className={styles.form__label} htmlFor="name">
+              Имя
             </label>
             <input
-              id="email"
-              type="email"
-              className={`${styles.form__input} ${errors.email ? styles['form__input--error'] : ''}`}
-              placeholder="example@mail.com"
-              {...register('email', emailValidation)}
+              id="name"
+              type="text"
+              className={`${styles.form__input} ${errors.name ? styles['form__input--error'] : ''}`}
+              placeholder="Введите имя"
+              {...register('name', nameValidation)}
             />
-            {errors.email && (
-              <span className={styles.form__error}>{errors.email.message}</span>
+            {errors.name && (
+              <span className={styles.form__error}>{errors.name.message}</span>
             )}
           </div>
 
