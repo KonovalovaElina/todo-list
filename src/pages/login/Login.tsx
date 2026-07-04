@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppContext } from '../../context/AppContext'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { loginUser } from '../../store/authSlice'
 import Layout from '../../layout/Layout'
 import { MOCK_CREDENTIALS_HINT } from '../../mocks/auth'
 import styles from '../../styles/AuthForm.module.css'
@@ -14,9 +15,9 @@ type LoginFormData = {
 
 export default function Login() {
   const navigate = useNavigate()
-  const { loginUser } = useAppContext()
+  const dispatch = useAppDispatch()
+  const isLoading = useAppSelector((state) => state.auth.isLoading)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const {
     register,
     handleSubmit,
@@ -25,18 +26,13 @@ export default function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     setAuthError(null)
-    setIsLoading(true)
 
-    const result = await loginUser(data.name, data.password)
-
-    setIsLoading(false)
-
-    if (!result.success) {
-      setAuthError(result.message ?? 'Ошибка авторизации')
-      return
+    try {
+      await dispatch(loginUser(data)).unwrap()
+      navigate('/tasks')
+    } catch (message) {
+      setAuthError(typeof message === 'string' ? message : 'Ошибка авторизации')
     }
-
-    navigate('/tasks')
   }
 
   return (

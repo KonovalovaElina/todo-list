@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppContext } from '../../context/AppContext'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { addTask, deleteTask, toggleTaskDone } from '../../store/tasksSlice'
 import Layout from '../../layout/Layout'
 import styles from './Tasks.module.css'
 
 export default function Tasks() {
   const navigate = useNavigate()
-  const { user, tasks, isTasksLoading, setTasks } = useAppContext()
+  const dispatch = useAppDispatch()
+  const user = useAppSelector((state) => state.auth.user)
+  const tasks = useAppSelector((state) => state.tasks.items)
+  const isTasksLoading = useAppSelector((state) => state.tasks.isLoading)
   const [newTaskText, setNewTaskText] = useState('')
 
   useEffect(() => {
@@ -16,23 +20,18 @@ export default function Tasks() {
   }, [user, navigate])
 
   const handleToggleDone = (id: number, checked: boolean) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, done: checked } : task)),
-    )
+    dispatch(toggleTaskDone({ id, done: checked }))
   }
 
   const handleDelete = (id: number) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id))
+    dispatch(deleteTask(id))
   }
 
   const handleAddTask = () => {
     const text = newTaskText.trim()
     if (!text) return
 
-    setTasks((prev) => [
-      ...prev,
-      { id: Date.now(), text, done: false },
-    ])
+    dispatch(addTask(text))
     setNewTaskText('')
   }
 

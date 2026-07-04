@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppContext } from '../../context/AppContext'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { registerUser } from '../../store/authSlice'
 import Layout from '../../layout/Layout'
 import styles from '../../styles/AuthForm.module.css'
 import { emailValidation, nameValidation, passwordValidation } from '../../utils/authValidation'
@@ -14,9 +15,9 @@ type RegisterFormData = {
 
 export default function Register() {
   const navigate = useNavigate()
-  const { registerUser } = useAppContext()
+  const dispatch = useAppDispatch()
+  const isLoading = useAppSelector((state) => state.auth.isLoading)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const {
     register,
     handleSubmit,
@@ -25,18 +26,13 @@ export default function Register() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setAuthError(null)
-    setIsLoading(true)
 
-    const result = await registerUser(data)
-
-    setIsLoading(false)
-
-    if (!result.success) {
-      setAuthError(result.message ?? 'Ошибка регистрации')
-      return
+    try {
+      await dispatch(registerUser(data)).unwrap()
+      navigate('/tasks')
+    } catch (message) {
+      setAuthError(typeof message === 'string' ? message : 'Ошибка регистрации')
     }
-
-    navigate('/tasks')
   }
 
   return (
